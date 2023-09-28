@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Main-Class: org.dmiit3iy.program.Program
+Class-Path: javafx-graphics-13.jar javafx-base-13.jar javafx-base-13-win
+ .jar jackson-core-2.15.2.jar javafx-controls-13-win.jar slf4j-simple-1.
+ 6.1.jar javafx-fxml-13-win.jar okhttp-eventsource-1.10.0.jar javafx-fxm
+ l-13.jar jackson-databind-2.15.2.jar jackson-annotations-2.15.2.jar oki
+ o-1.13.0.jar okhttp-3.8.1.jar javafx-graphics-13-win.jar javafx-control
+ s-13.jar slf4j-api-1.6.1.jar
+
