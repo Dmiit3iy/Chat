@@ -30,6 +30,7 @@ public class Msg {
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     @ToString.Exclude
+   // @JsonIgnore
     private User user;
 
 }

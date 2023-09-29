@@ -16,7 +16,11 @@ import org.dmiit3iy.utils.Constans;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 public class MsgRepository {
@@ -58,10 +62,12 @@ public class MsgRepository {
         return httpURLConnection.getInputStream();
     }
 
-    public ArrayList<User> get() throws IOException {
-        try (InputStream inputStream = getData(Constans.SERVER_URL + "/msg", "GET")) {
-            ObjectMapper mapper = new ObjectMapper();
-            return mapper.readValue(inputStream, new TypeReference<>() {});
+    public List<Msg> get() throws IOException {
+        try (InputStream inputStream = getData(Constans.SERVER_URL + "/msgs", "GET")) {
+
+            ResponseResult<ArrayList<Msg>> responseResult = objectMapper.readValue(inputStream, new TypeReference<ResponseResult<ArrayList<Msg>>>() {});
+
+            return responseResult.getData();
         }
     }
 

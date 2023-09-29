@@ -10,7 +10,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class SSEEmittersRepository {
     private CopyOnWriteArrayList<AsyncContext> list = new CopyOnWriteArrayList<>();
 
-    private Map<Long,CopyOnWriteArrayList<AsyncContext>> map= new ConcurrentHashMap<>();
+
 
     public void add(AsyncContext asyncContext){
         asyncContext.addListener(new AsyncListener() {

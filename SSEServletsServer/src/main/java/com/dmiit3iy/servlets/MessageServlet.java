@@ -17,7 +17,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 @WebServlet(value = "/chatnew/msgs", asyncSupported = true)
 public class MessageServlet extends HttpServlet {
@@ -41,7 +43,7 @@ public class MessageServlet extends HttpServlet {
     }
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         if (req.getHeader("Accept").equals("text/event-stream")) {
 
             resp.setContentType("text/event-stream");
@@ -51,6 +53,21 @@ public class MessageServlet extends HttpServlet {
             AsyncContext asyncContext = req.startAsync();
             asyncContext.setTimeout(60000L);
             this.emitters.add(asyncContext);
+        } else {
+            resp.setCharacterEncoding("utf-8");
+            req.setCharacterEncoding("utf-8");
+            resp.setContentType("application/json");
+            try {
+            List<Msg> list = DAO.getAllObjects(Msg.class);
+            DAO.closeOpenedSession();
+
+                this.objectMapper.writeValue(resp.getWriter(), new ResponseResult<>(null, list));
+            } catch (IOException e) {
+                this.objectMapper.writeValue(resp.getWriter(), new ResponseResult<>(e.getMessage(), null));
+            }
+
+
+
         }
 
     }

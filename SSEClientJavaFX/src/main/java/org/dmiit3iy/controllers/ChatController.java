@@ -18,6 +18,9 @@ import org.dmiit3iy.utils.SimpleEventHandler;
 import java.io.IOException;
 import java.net.URI;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.concurrent.*;
 import java.util.prefs.Preferences;
 
@@ -127,4 +130,19 @@ public class ChatController {
     }
 
 
+    public void getAllMsgButton(ActionEvent actionEvent) throws IOException {
+        List<Msg> msgArrayList =msgRepository.get();
+        msgArrayList.sort(new Comparator<Msg>() {
+            @Override
+            public int compare(Msg o1, Msg o2) {
+                return o1.getLocalDateTime().compareTo(o2.getLocalDateTime());
+            }
+        });
+        for (Msg m:msgArrayList
+             ) {
+            chatTextArea.appendText(m.toString());
+            chatTextArea.appendText("\n");
+        }
+
+    }
 }
