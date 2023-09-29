@@ -17,6 +17,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.time.format.DateTimeFormatter;
 
 @WebServlet(value = "/chatnew/msgs", asyncSupported = true)
 public class MessageServlet extends HttpServlet {
@@ -82,7 +83,7 @@ public class MessageServlet extends HttpServlet {
         }finally {
             DAO.closeOpenedSession();
         }
-        service.addEvent(new Event(msg.getUser().getLogin(),msg.getMessage()+msg.getLocalDateTime()));
+        service.addEvent(new Event(msg.getUser().getLogin(),msg.getMessage()+" "+msg.getLocalDateTime().format(DateTimeFormatter.ofPattern("yyy-MM-dd HH-mm-ss"))));
        
     }
 

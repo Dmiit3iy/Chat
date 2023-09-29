@@ -9,6 +9,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import org.dmiit3iy.model.Msg;
 import org.dmiit3iy.model.User;
 import org.dmiit3iy.repositories.MsgRepository;
@@ -40,13 +41,14 @@ public class ChatController {
     }
 
     private String EventMessage;
+    ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     public TextArea chatTextArea;
     public TextArea messageTextArea;
     User user;
     public void initData(User user) {
         this.user=user;
-        ExecutorService executorService = Executors.newSingleThreadExecutor();
+
             executorService.execute(() -> {
                 try {
                     while (true) {
@@ -108,7 +110,21 @@ public class ChatController {
         Preferences userIDlog = Preferences.userRoot();
         userlog.putBoolean("authorization", false);
         userIDlog.put("userID","-1");
+        executorService.shutdownNow();
         Stage stage1 = (Stage) logOfButtonId.getScene().getWindow();
         stage1.close();
     }
+
+    private javafx.event.EventHandler<WindowEvent> closeEventHandler = new javafx.event.EventHandler<WindowEvent>() {
+        @Override
+        public void handle(WindowEvent event) {
+           executorService.shutdownNow();
+        }
+    };
+
+    public javafx.event.EventHandler<WindowEvent> getCloseEventHandler() {
+        return closeEventHandler;
+    }
+
+
 }

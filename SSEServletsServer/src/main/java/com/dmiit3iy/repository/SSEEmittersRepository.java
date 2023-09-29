@@ -3,10 +3,14 @@ package com.dmiit3iy.repository;
 import javax.servlet.AsyncContext;
 import javax.servlet.AsyncEvent;
 import javax.servlet.AsyncListener;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class SSEEmittersRepository {
     private CopyOnWriteArrayList<AsyncContext> list = new CopyOnWriteArrayList<>();
+
+    private Map<Long,CopyOnWriteArrayList<AsyncContext>> map= new ConcurrentHashMap<>();
 
     public void add(AsyncContext asyncContext){
         asyncContext.addListener(new AsyncListener() {

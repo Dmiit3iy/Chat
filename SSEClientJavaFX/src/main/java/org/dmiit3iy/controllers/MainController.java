@@ -41,6 +41,9 @@ public class MainController {
             String userID = String.valueOf(user.getId());
             userlog.putBoolean("authorization", true);
             userIDlog.put("userID", userID);
+
+
+            stage.setOnCloseRequest(chatController.getCloseEventHandler());
             loginTextField.clear();
             passwordTextArea.clear();
             stage.show();

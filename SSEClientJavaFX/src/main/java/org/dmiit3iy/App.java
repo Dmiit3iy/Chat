@@ -6,6 +6,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.stage.Stage;
+import org.dmiit3iy.controllers.MainController;
 
 import java.io.IOException;
 
@@ -18,9 +19,18 @@ public class App extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
-        scene = new Scene(loadFXML("main"), 640, 480);
+
+
+        FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource("main" + ".fxml"));
+
+
+        Parent root = fxmlLoader.load();
+        scene = new Scene(root, 640, 480);
         stage.setScene(scene);
         stage.show();
+//        MainController controller = fxmlLoader.getController();
+//        stage.setOnCloseRequest(controller.getCloseEventHandler());
+
     }
 
     static void setRoot(String fxml) throws IOException {
@@ -43,7 +53,6 @@ public class App extends Application {
         alert.setContentText(message);
         alert.showAndWait();
     }
-
 
 
 }
