@@ -14,6 +14,7 @@ import org.dmiit3iy.utils.Constans;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.prefs.Preferences;
 
 
 public class MainController {
@@ -27,16 +28,20 @@ public class MainController {
         login = this.loginTextField.getText();
         password= this.passwordTextArea.getText();
         UserRepository userRepository = new UserRepository();
-        if(userRepository.getUser(login,password)!=null){
+        User user =userRepository.getUser(login,password);
+        if(user!=null){
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/org/dmiit3iy/chat.fxml"));
             Stage stage = new Stage(StageStyle.DECORATED);
             stage.setScene(new Scene(loader.load()));
-            stage.show();
+            Preferences userlog = Preferences.userRoot();
+            Preferences userIDlog = Preferences.userRoot();
+            String userID = String.valueOf(user.getId());
+            userlog.putBoolean("authorization", true);
+            userIDlog.put("userID", userID);
             loginTextField.clear();
             passwordTextArea.clear();
+            stage.show();
         }
-
-
 
     }
 

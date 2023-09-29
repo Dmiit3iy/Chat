@@ -5,7 +5,10 @@ import com.launchdarkly.eventsource.EventSource;
 import com.launchdarkly.eventsource.MessageEvent;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
+import javafx.scene.control.Button;
+import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
+import javafx.stage.Stage;
 import org.dmiit3iy.model.Msg;
 import org.dmiit3iy.model.User;
 import org.dmiit3iy.repositories.MsgRepository;
@@ -15,9 +18,12 @@ import java.io.IOException;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.concurrent.*;
+import java.util.prefs.Preferences;
 
 public class ChatController {
 
+    public Button logOfButtonId;
+    public ListView onLineUsersListView;
     private BlockingQueue<String> blockingQueue = new LinkedBlockingQueue<>();
     public void setBlockingQueue(String s) throws InterruptedException {
         this.blockingQueue.put(s);
@@ -94,5 +100,15 @@ public class ChatController {
         Msg msg = new Msg(message,localDateTime,user);
         msgRepository.add(msg,user);
 
+    }
+
+    public void LogOffButton(ActionEvent actionEvent) {
+        Preferences userlog = Preferences.userRoot();
+        userlog.put("authorization", "null");
+        Preferences userIDlog = Preferences.userRoot();
+        userlog.putBoolean("authorization", false);
+        userIDlog.put("userID","-1");
+        Stage stage1 = (Stage) logOfButtonId.getScene().getWindow();
+        stage1.close();
     }
 }

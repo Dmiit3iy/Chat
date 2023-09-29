@@ -10,5 +10,6 @@
       <Button layoutX="37.0" layoutY="324.0" mnemonicParsing="false" onAction="#sendButton" text="Send message" />
       <Label layoutX="37.0" layoutY="14.0" text="Chat" />
       <Label layoutX="37.0" layoutY="235.0" text="Message" />
+      <Button fx:id="logOfButtonId" layoutX="534.0" layoutY="361.0" mnemonicParsing="false" onAction="#LogOffButton" text="LogOff" />
    </children>
 </AnchorPane>
