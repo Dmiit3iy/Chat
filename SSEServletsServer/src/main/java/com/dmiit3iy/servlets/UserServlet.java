@@ -24,6 +24,7 @@ public class UserServlet extends HttpServlet {
         req.setCharacterEncoding("UTF-8");
         resp.setCharacterEncoding("UTF-8");
         resp.setContentType("application/json;charset=utf-8");
+
         try (BufferedReader reader = req.getReader()) {
             User user = objectMapper.readValue(reader, User.class);
             DAO.addObject(user);
@@ -49,8 +50,8 @@ public class UserServlet extends HttpServlet {
         resp.setContentType("application/json;charset=utf-8");
         String id = req.getParameter("id");
         String login = req.getParameter("login");
-
-        if (id != null&login==null) {
+        String password = req.getParameter("password");
+        if (id != null&login==null&password==null) {
             try {
                 User user = (User) DAO.getObjectById(Long.valueOf(id), User.class);
                 if (user == null) {
@@ -67,14 +68,14 @@ public class UserServlet extends HttpServlet {
                 this.objectMapper.writeValue(resp.getWriter(), new ResponseResult<>(e.getMessage(), null));
             }
         }
-        if (id == null&login!=null) {
-            String[] param = {login};
-            String[] param2 ={"login"};
+        if (id == null&login!=null&password!=null) {
+            String[] param = {login,password};
+            String[] param2 ={"login","password"};
             User user = (User) DAO.getObjectByParams(param2,param, User.class);
             if (user == null) {
                 resp.setStatus(400);
                 this.objectMapper.writeValue(resp.getWriter(), new ResponseResult<>
-                        ("Введены неверные данные или пользователь отсутствует в базе данных", null));
+                        ("Введены неверные данные или пользователь отсутвует в базе данных", null));
 
             } else {
                 this.objectMapper.writeValue(resp.getWriter(), new ResponseResult<>(null, user));

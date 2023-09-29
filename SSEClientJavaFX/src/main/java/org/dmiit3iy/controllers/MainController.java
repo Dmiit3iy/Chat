@@ -17,45 +17,36 @@ import java.io.InputStreamReader;
 
 
 public class MainController {
+    public TextField passwordTextArea;
     private String login;
+    private String password;
     public TextField loginTextField;
     ObjectMapper objectMapper = new ObjectMapper();
 
-    public void chatButton(ActionEvent actionEvent) {
+    public void chatButton(ActionEvent actionEvent) throws IOException {
         login = this.loginTextField.getText();
-
+        password= this.passwordTextArea.getText();
         UserRepository userRepository = new UserRepository();
-        String str = Constans.SERVER_URL + "/users?login=" + login;
-        String resp;
-        try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(userRepository.getData(str, "GET")))) {
-            while (bufferedReader.ready()) {
-                try {
-                    resp = bufferedReader.readLine();
-                    System.out.println(resp);
-                    String resp2 = resp.substring(8, resp.length() - 1);
-                   System.out.println(resp2);
-                   User user = objectMapper.readValue(resp2, User.class);
-
-                   if (user != null) {
-                        FXMLLoader loader = new FXMLLoader(getClass().getResource("/org/dmiit3iy/chat.fxml"));
-                        Stage stage = new Stage(StageStyle.DECORATED);
-                        stage.setScene(new Scene(loader.load()));
-                        ChatController chatController= loader.getController();
-                        chatController.initData(user);
-
-                        loginTextField.clear();
-
-
-                        stage.show();
-                    }
-
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        if(userRepository.getUser(login,password)!=null){
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/org/dmiit3iy/chat.fxml"));
+            Stage stage = new Stage(StageStyle.DECORATED);
+            stage.setScene(new Scene(loader.load()));
+            stage.show();
+            loginTextField.clear();
+            passwordTextArea.clear();
         }
 
+
+
+    }
+
+    public void registraionButton(ActionEvent actionEvent) throws IOException {
+
+        Stage stage1 = (Stage) loginTextField.getScene().getWindow();
+
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/org/dmiit3iy/registration.fxml"));
+        Stage stage = new Stage(StageStyle.DECORATED);
+        stage.setScene(new Scene(loader.load()));
+        stage.show();
     }
 }

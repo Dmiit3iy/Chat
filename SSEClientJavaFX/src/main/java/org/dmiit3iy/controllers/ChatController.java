@@ -13,6 +13,7 @@ import org.dmiit3iy.utils.SimpleEventHandler;
 
 import java.io.IOException;
 import java.net.URI;
+import java.time.LocalDateTime;
 import java.util.concurrent.*;
 
 public class ChatController {
@@ -89,7 +90,8 @@ public class ChatController {
 
     public void sendButton(ActionEvent actionEvent) throws IOException {
         message =messageTextArea.getText();
-        Msg msg = new Msg(message,user);
+        LocalDateTime localDateTime = LocalDateTime.now();
+        Msg msg = new Msg(message,localDateTime,user);
         msgRepository.add(msg,user);
 
     }

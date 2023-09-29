@@ -13,8 +13,8 @@
     <property name="show_sql">true</property>
     <property name="hibernate.hbm2ddl.auto">update</property>
 
-    <mapping class="com.kirillkotov.model.Msg" />
-    <mapping class="com.kirillkotov.model.User" />
+    <mapping class="com.dmiit3iy.model.Msg" />
+    <mapping class="com.dmiit3iy.model.User" />
 
   </session-factory>
 </hibernate-configuration>

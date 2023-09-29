@@ -6,8 +6,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ResponseResult<T> {
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String message;
-
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private T data;
 
     public ResponseResult(String message, T data) {
@@ -30,4 +31,5 @@ public class ResponseResult<T> {
     public void setData(T data) {
         this.data = data;
     }
+
 }

@@ -7,7 +7,7 @@ import com.dmiit3iy.dto.ResponseResult;
 import com.dmiit3iy.model.Msg;
 import com.dmiit3iy.model.User;
 import com.dmiit3iy.repository.SSEEmittersRepository;
-import com.dmiit3iy.service.FolderWatchService;
+import com.dmiit3iy.service.ChatService;
 
 import javax.servlet.AsyncContext;
 import javax.servlet.annotation.WebServlet;
@@ -20,13 +20,13 @@ import java.io.IOException;
 @WebServlet(value = "/chatnew/msgs", asyncSupported = true)
 public class MessageServlet extends HttpServlet {
     private SSEEmittersRepository emitters = new SSEEmittersRepository();
-    private FolderWatchService service;
+    private ChatService service;
     private   Msg msg;
 ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     public void init() {
-        this.service = new FolderWatchService(this.emitters);
+        this.service = new ChatService(this.emitters);
     }
 
     @Override

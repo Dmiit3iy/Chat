@@ -17,6 +17,9 @@ public class User {
     @NonNull
     private String login;
 
+    @NonNull
+    private String password;
+
     @ToString.Exclude
     @JsonIgnore
     private List<Msg> msgs;
