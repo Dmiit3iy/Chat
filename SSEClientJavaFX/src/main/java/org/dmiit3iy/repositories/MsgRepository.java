@@ -2,9 +2,12 @@ package org.dmiit3iy.repositories;
 
 
 import com.fasterxml.jackson.core.type.TypeReference;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import javafx.scene.control.Alert;
 import org.dmiit3iy.App;
+import org.dmiit3iy.dto.ResponseResult;
 import org.dmiit3iy.model.Msg;
 import org.dmiit3iy.model.User;
 import org.dmiit3iy.utils.Constans;
@@ -17,7 +20,11 @@ import java.util.ArrayList;
 
 
 public class MsgRepository {
-    ObjectMapper objectMapper = new ObjectMapper();
+    private ObjectMapper objectMapper = new ObjectMapper();
+
+    {
+        this.objectMapper.registerModule(new JavaTimeModule());
+    }
 
     public  <T> InputStream getData(String link, String method, T value) throws IOException {
         URL url = new URL(link);
@@ -28,11 +35,11 @@ public class MsgRepository {
         try (BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(httpURLConnection.getOutputStream())) {
             this.objectMapper.writeValue(bufferedOutputStream, value);
             if (httpURLConnection.getResponseCode() == 400) {
-                try (BufferedReader bufferedReader = new BufferedReader(
-                        new InputStreamReader(httpURLConnection.getErrorStream()))) {
-                    String error = bufferedReader.readLine();//TODO  принять объект responceresult и взять из него message
-                    throw new IllegalArgumentException(error);
-                }
+                ResponseResult<Msg> responseResult = objectMapper.readValue(new InputStreamReader
+                        (httpURLConnection.getErrorStream()), new TypeReference<ResponseResult<Msg>>() {
+                });
+                App.showMessage("ошибка", responseResult.getMessage(), Alert.AlertType.ERROR);
+                throw new IllegalArgumentException(responseResult.getMessage());
             }
         }
         return httpURLConnection.getInputStream();
@@ -42,12 +49,11 @@ public class MsgRepository {
         HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
         httpURLConnection.setRequestMethod(method);
         if (httpURLConnection.getResponseCode() == 400) {
-            try (BufferedReader bufferedReader = new BufferedReader(
-                    new InputStreamReader(httpURLConnection.getErrorStream()))) {
-                String error = bufferedReader.readLine();
-                App.showMessage("ошибка", error.substring(12,error.length()-2), Alert.AlertType.ERROR);
-                throw new IllegalArgumentException(error);
-            }
+            ResponseResult<Msg> responseResult = objectMapper.readValue(new InputStreamReader
+                    (httpURLConnection.getErrorStream()), new TypeReference<ResponseResult<Msg>>() {
+            });
+            App.showMessage("ошибка", responseResult.getMessage(), Alert.AlertType.ERROR);
+            throw new IllegalArgumentException(responseResult.getMessage());
         }
         return httpURLConnection.getInputStream();
     }
@@ -61,7 +67,11 @@ public class MsgRepository {
 
     public Msg add(Msg msg,User user) throws IOException {
         try (InputStream inputStream = getData(Constans.SERVER_URL + "/msgs?id="+user.getId(), "POST", msg)) {
-            return objectMapper.readValue(inputStream, Msg.class);
+            ResponseResult<Msg> responseResult = objectMapper.readValue(inputStream, new TypeReference<ResponseResult<Msg>>() {
+            });
+            return responseResult.getData();
         }
     }
+
+
 }

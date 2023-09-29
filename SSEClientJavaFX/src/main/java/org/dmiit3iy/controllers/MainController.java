@@ -33,6 +33,9 @@ public class MainController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/org/dmiit3iy/chat.fxml"));
             Stage stage = new Stage(StageStyle.DECORATED);
             stage.setScene(new Scene(loader.load()));
+
+            ChatController chatController = loader.getController();
+            chatController.initData(user);
             Preferences userlog = Preferences.userRoot();
             Preferences userIDlog = Preferences.userRoot();
             String userID = String.valueOf(user.getId());
@@ -44,6 +47,7 @@ public class MainController {
         }
 
     }
+
 
     public void registraionButton(ActionEvent actionEvent) throws IOException {
 

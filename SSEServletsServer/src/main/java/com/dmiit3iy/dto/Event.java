@@ -4,28 +4,29 @@ import java.util.StringJoiner;
 
 public class Event {
 
-    private final String action;
-    private final String path;
+    private final String user;
+   // private final String action;
+    private final String message;
 
-    public Event(String action, String path) {
-        this.action = action;
+    public Event(String user, String message) {
+        this.user = user;
        // this.path = path.toString();
-        this.path = path;
+        this.message = message;
     }
 
-    public String getAction() {
-        return action;
+    public String getUser() {
+        return user;
     }
 
-    public String getPath() {
-        return path;
+    public String getMessage() {
+        return message;
     }
 
     @Override
     public String toString() {
         return new StringJoiner(", ", Event.class.getSimpleName() + "[", "]")
-                .add("action='" + action + "'")
-                .add("path='" + path + "'")
+                .add("User'" + user + "'")
+                .add(":" + message + "'")
                 .toString();
     }
 }

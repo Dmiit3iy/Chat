@@ -28,11 +28,11 @@ public class UserRepository {
         try (BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(httpURLConnection.getOutputStream())) {
             this.objectMapper.writeValue(bufferedOutputStream, value);
             if (httpURLConnection.getResponseCode() == 400) {
-                try (BufferedReader bufferedReader = new BufferedReader(
-                        new InputStreamReader(httpURLConnection.getErrorStream()))) {
-                    String error = bufferedReader.readLine();
-                    throw new IllegalArgumentException(error);
-                }
+                ResponseResult<User> responseResult = objectMapper.readValue(new InputStreamReader
+                        (httpURLConnection.getErrorStream()), new TypeReference<ResponseResult<User>>() {
+                });
+                App.showMessage("ошибка", responseResult.getMessage(), Alert.AlertType.ERROR);
+                throw new IllegalArgumentException(responseResult.getMessage());
             }
         }
         return httpURLConnection.getInputStream();
@@ -43,12 +43,13 @@ public class UserRepository {
         HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
         httpURLConnection.setRequestMethod(method);
         if (httpURLConnection.getResponseCode() == 400) {
-            try (BufferedReader bufferedReader = new BufferedReader(
-                    new InputStreamReader(httpURLConnection.getErrorStream()))) {
-                String error = bufferedReader.readLine();
-                App.showMessage("ошибка", error.substring(12, error.length() - 2), Alert.AlertType.ERROR);
-                throw new IllegalArgumentException(error);
-            }
+            ResponseResult<User> responseResult = objectMapper.readValue(new InputStreamReader
+                    (httpURLConnection.getErrorStream()), new TypeReference<ResponseResult<User>>() {
+            });
+            App.showMessage("ошибка", responseResult.getMessage(), Alert.AlertType.ERROR);
+            throw new IllegalArgumentException(responseResult.getMessage());
+
+
         }
         return httpURLConnection.getInputStream();
     }
@@ -62,7 +63,7 @@ public class UserRepository {
     }
 
     public User getUser(String login, String password) throws IOException {
-        InputStream inputStream = getData(Constans.SERVER_URL + "/users?login=" + login+"&password="+password, "GET");
+        InputStream inputStream = getData(Constans.SERVER_URL + "/users?login=" + login + "&password=" + password, "GET");
         ResponseResult<User> responseResult = objectMapper.readValue(inputStream, new TypeReference<ResponseResult<User>>() {
         });
         return responseResult.getData();

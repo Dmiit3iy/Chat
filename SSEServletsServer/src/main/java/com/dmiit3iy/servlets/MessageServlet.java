@@ -8,6 +8,7 @@ import com.dmiit3iy.model.Msg;
 import com.dmiit3iy.model.User;
 import com.dmiit3iy.repository.SSEEmittersRepository;
 import com.dmiit3iy.service.ChatService;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import javax.servlet.AsyncContext;
 import javax.servlet.annotation.WebServlet;
@@ -22,7 +23,11 @@ public class MessageServlet extends HttpServlet {
     private SSEEmittersRepository emitters = new SSEEmittersRepository();
     private ChatService service;
     private   Msg msg;
-ObjectMapper objectMapper = new ObjectMapper();
+    private ObjectMapper objectMapper = new ObjectMapper();
+
+    {
+        this.objectMapper.registerModule(new JavaTimeModule());
+    }
 
     @Override
     public void init() {
@@ -77,7 +82,7 @@ ObjectMapper objectMapper = new ObjectMapper();
         }finally {
             DAO.closeOpenedSession();
         }
-        service.addEvent(new Event(msg.getUser().getLogin(),msg.getMessage()));
+        service.addEvent(new Event(msg.getUser().getLogin(),msg.getMessage()+msg.getLocalDateTime()));
        
     }
 
