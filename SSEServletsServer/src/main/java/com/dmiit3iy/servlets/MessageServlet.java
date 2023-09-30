@@ -52,7 +52,10 @@ public class MessageServlet extends HttpServlet {
 
             AsyncContext asyncContext = req.startAsync();
             asyncContext.setTimeout(60000L);
-            this.emitters.add(asyncContext);
+            System.out.println("Подключение эмиттера"+asyncContext);
+            String idUser = req.getParameter("id");
+            System.out.println("Пользователь"+idUser);
+            this.emitters.add(asyncContext,idUser);
         } else {
             resp.setCharacterEncoding("utf-8");
             req.setCharacterEncoding("utf-8");

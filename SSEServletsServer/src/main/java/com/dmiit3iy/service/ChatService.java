@@ -65,6 +65,7 @@ public class ChatService {
         this.singleThreadExecutorTasker.shutdownNow();
         this.singleThreadExecutorWatcher.shutdownNow();
         this.repository.clear();
+        this.repository.clearMap();
         this.messageBlockingQueue.clear();
     }
 }

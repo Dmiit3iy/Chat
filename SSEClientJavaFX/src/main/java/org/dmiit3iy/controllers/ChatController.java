@@ -59,7 +59,7 @@ public class ChatController {
                     while (true) {
                         System.out.println("Initialize event source");
 
-                        String url = "http://localhost:8080/chatnew/msgs";
+                        String url = "http://localhost:8080/chatnew/msgs"+"?id="+user.getId();
                         EventSource.Builder builder = new EventSource.Builder(new EventHandler() {
                             @Override
                             public void onOpen() throws Exception {
