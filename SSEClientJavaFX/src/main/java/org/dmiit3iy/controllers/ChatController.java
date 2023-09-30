@@ -13,6 +13,7 @@ import javafx.stage.WindowEvent;
 import org.dmiit3iy.model.Msg;
 import org.dmiit3iy.model.User;
 import org.dmiit3iy.repositories.MsgRepository;
+import org.dmiit3iy.utils.EventWrapper;
 import org.dmiit3iy.utils.SimpleEventHandler;
 
 import java.io.IOException;
@@ -73,7 +74,8 @@ public class ChatController {
                             public void onMessage(String s, MessageEvent messageEvent) throws Exception {
                                 //передать из потока в javaFX
                                 Platform.runLater(() -> {
-                                    chatTextArea.appendText(messageEvent.getData());
+                                    System.out.println(messageEvent.getData());
+                                    chatTextArea.appendText(EventWrapper.makeString(messageEvent));
                                     chatTextArea.appendText("\n");
                                 });
                             }
