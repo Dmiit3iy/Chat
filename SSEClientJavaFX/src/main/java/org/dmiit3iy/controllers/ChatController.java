@@ -51,6 +51,7 @@ public class ChatController {
     public TextArea messageTextArea;
     User user;
     public void initData(User user) {
+        chatTextArea.setEditable(false);
         this.user=user;
 
             executorService.execute(() -> {
@@ -106,6 +107,7 @@ public class ChatController {
         LocalDateTime localDateTime = LocalDateTime.now();
         Msg msg = new Msg(message,localDateTime,user);
         msgRepository.add(msg,user);
+        messageTextArea.clear();
 
     }
 
