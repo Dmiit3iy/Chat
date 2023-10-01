@@ -18,7 +18,9 @@ import org.dmiit3iy.model.Msg;
 import org.dmiit3iy.model.User;
 
 import org.dmiit3iy.repositories.MsgRepository;
+import org.dmiit3iy.utils.EventOnlineWrapper;
 import org.dmiit3iy.utils.EventWrapper;
+import org.dmiit3iy.utils.SimpleEventHandler;
 
 
 import java.io.IOException;
@@ -47,7 +49,6 @@ public class ChatController {
     private String message;
 
 
-
     private String EventMessage;
     ExecutorService executorService = Executors.newSingleThreadExecutor();
 
@@ -56,6 +57,9 @@ public class ChatController {
     public TextArea chatTextArea;
     public TextArea messageTextArea;
     User user;
+
+
+
 
     public void initData(User user) {
         loginLable.setText(user.getLogin());
@@ -68,6 +72,44 @@ public class ChatController {
                     System.out.println("Initialize event source");
 
                     String url = "http://localhost:8080/chatnew/msgs" + "?login=" + user.getLogin();
+
+
+                    String url2 = "http://localhost:8080/chatnew/emiters";
+
+
+                    EventSource.Builder builder2 = new EventSource.Builder(new EventHandler() {
+                        @Override
+                        public void onOpen() throws Exception {
+
+                        }
+
+                        @Override
+                        public void onClosed() throws Exception {
+
+                        }
+
+                        @Override
+                        public void onMessage(String s, MessageEvent messageEvent) throws Exception {
+                            //передать из потока в javaFX
+                            Platform.runLater(() -> {
+                                System.out.println("ПРо онлай пользователей"+messageEvent.getData());
+                                System.out.println(EventOnlineWrapper.makeString(messageEvent));
+                                ObservableList<String> listEmitters = FXCollections.observableArrayList(EventOnlineWrapper.makeString(messageEvent));
+                                onLineUsersListView.setItems(listEmitters);
+                            });
+                        }
+
+                        @Override
+                        public void onComment(String s) throws Exception {
+
+                        }
+
+                        @Override
+                        public void onError(Throwable throwable) {
+
+                        }
+                    }, URI.create(url2));
+
                     EventSource.Builder builder = new EventSource.Builder(new EventHandler() {
                         @Override
                         public void onOpen() throws Exception {
@@ -100,27 +142,65 @@ public class ChatController {
                         }
                     }, URI.create(url));
 
-                    try (EventSource eventSource = builder.build()) {
+                    try (EventSource eventSource = builder.build();EventSource eventSource2 = builder2.build()) {
                         eventSource.start();
+                        eventSource2.start();
                         TimeUnit.SECONDS.sleep(10);
                     }
                 }
 
+
+
+
             } catch (InterruptedException ignored) {
             }
+
+//            try {
+//                while (true) {
+//                    System.out.println("Initialize event source");
+//                    EventHandler eventHandler2 = new SimpleEventHandler();
+//                    String url2 = "http://localhost:8080/chatnew/emiters";
+//                    EventSource.Builder builder = new EventSource.Builder(eventHandler2, URI.create(url2));
+//
+//                    try (EventSource eventSource = builder.build()) {
+//                        eventSource.start();
+//                        TimeUnit.MINUTES.sleep(1);
+//                    }
+//                }
+//            } catch (InterruptedException ignored) {}
+
+
+
         });
 
-        executorService2.execute(() -> {
-            try {while (true) {
-                ObservableList<String> listEmitters = FXCollections.observableArrayList(msgRepository.getEmitters());
-                onLineUsersListView.setItems(listEmitters);
-                Thread.sleep(100);
-            }
-            } catch (IOException | InterruptedException ignored) {
+//        executorService2.execute(() -> {
+//            try {while (true) {
+//                ObservableList<String> listEmitters = FXCollections.observableArrayList(msgRepository.getEmitters());
+//                onLineUsersListView.setItems(listEmitters);
+//                Thread.sleep(100);
+//            }
+//            } catch (IOException | InterruptedException ignored) {
+//
+//            }
+//        });
 
-            }
-        });
+//        executorService2.execute(() -> {
+//            try {
+//                while (true) {
+//                    System.out.println("Initialize event source");
+//                    EventHandler eventHandler = new SimpleEventHandler();
+//                    String url = "http://localhost:8080/chatnew/emiters";
+//                    EventSource.Builder builder = new EventSource.Builder(eventHandler, URI.create(url));
+//
+//                    try (EventSource eventSource = builder.build()) {
+//                        eventSource.start();
+//                        TimeUnit.MINUTES.sleep(1);
+//                    }
+//                }
+//            } catch (InterruptedException ignored) {}
+//        });
     }
+
 
 
     public void sendButton(ActionEvent actionEvent) throws IOException {

@@ -11,7 +11,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class SSEEmittersRepository {
     private CopyOnWriteArrayList<AsyncContext> list = new CopyOnWriteArrayList<>();
 
-    private ConcurrentHashMap<String, CopyOnWriteArrayList<AsyncContext>> map = new ConcurrentHashMap<>();
+    private static ConcurrentHashMap<String, CopyOnWriteArrayList<AsyncContext>> map = new ConcurrentHashMap<>();
 
     public void add(AsyncContext asyncContext, String login) {
         asyncContext.addListener(new AsyncListener() {
@@ -81,7 +81,7 @@ public class SSEEmittersRepository {
         this.map.clear();
     }
 
-    public CopyOnWriteArrayList<String> getOnlineEmitters(){
+    public static CopyOnWriteArrayList<String> getOnlineEmitters(){
 
         CopyOnWriteArrayList<String> list1 = new CopyOnWriteArrayList<>();
         for (var pair:map.entrySet()) {
