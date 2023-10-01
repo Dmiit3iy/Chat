@@ -102,7 +102,7 @@ public class ChatController {
 
                     try (EventSource eventSource = builder.build()) {
                         eventSource.start();
-                        TimeUnit.MINUTES.sleep(1);
+                        TimeUnit.SECONDS.sleep(10);
                     }
                 }
 
@@ -114,7 +114,7 @@ public class ChatController {
             try {while (true) {
                 ObservableList<String> listEmitters = FXCollections.observableArrayList(msgRepository.getEmitters());
                 onLineUsersListView.setItems(listEmitters);
-                Thread.sleep(1000);
+                Thread.sleep(100);
             }
             } catch (IOException | InterruptedException ignored) {
 

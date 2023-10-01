@@ -17,7 +17,6 @@ public class ChatService {
 
     private BlockingQueue<Event> messageBlockingQueue = new LinkedBlockingQueue<>();
 
-    private ExecutorService singleThreadExecutorWatcher;
     private ExecutorService singleThreadExecutorTasker;
 
     private void sendMessage(PrintWriter writer, Event message) {
@@ -63,7 +62,6 @@ public class ChatService {
 
     public void stop() {
         this.singleThreadExecutorTasker.shutdownNow();
-        this.singleThreadExecutorWatcher.shutdownNow();
         this.repository.clear();
         this.repository.clearMap();
         this.messageBlockingQueue.clear();
