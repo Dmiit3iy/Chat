@@ -13,27 +13,27 @@ public class SSEEmittersRepository {
 
     private ConcurrentHashMap<String, CopyOnWriteArrayList<AsyncContext>> map = new ConcurrentHashMap<>();
 
-    public void add(AsyncContext asyncContext, String idUser) {
+    public void add(AsyncContext asyncContext, String login) {
         asyncContext.addListener(new AsyncListener() {
             @Override
             public void onComplete(AsyncEvent asyncEvent) {
                 list.remove(asyncContext);
                 System.out.println("Finish");
-                removeFromMap(asyncContext, idUser);
+                removeFromMap(asyncContext, login);
             }
 
             @Override
             public void onTimeout(AsyncEvent asyncEvent) {
                 list.remove(asyncContext);
                 System.out.println("Timeout");
-                removeFromMap(asyncContext, idUser);
+                removeFromMap(asyncContext, login);
             }
 
             @Override
             public void onError(AsyncEvent asyncEvent) {
                 list.remove(asyncContext);
                 System.out.println("Error");
-                removeFromMap(asyncContext, idUser);
+                removeFromMap(asyncContext, login);
             }
 
             @Override
@@ -44,7 +44,8 @@ public class SSEEmittersRepository {
 
         list.add(asyncContext);
         System.out.println("After adding emitter " + list);
-        addInMap(asyncContext, idUser);
+        addInMap(asyncContext, login);
+        System.out.println("МАПА эмиттеров: "+map);
     }
 
     public CopyOnWriteArrayList<AsyncContext> getList() {
@@ -59,23 +60,35 @@ public class SSEEmittersRepository {
         this.list.clear();
     }
 
-    public void addInMap(AsyncContext asyncContext, String idUser) {
-        if(idUser!=null) {
-            CopyOnWriteArrayList<AsyncContext> list = map.getOrDefault(idUser, new CopyOnWriteArrayList<>());
+    public void addInMap(AsyncContext asyncContext, String login) {
+        if(login!=null) {
+            CopyOnWriteArrayList<AsyncContext> list = map.getOrDefault(login, new CopyOnWriteArrayList<>());
             list.add(asyncContext);
-            map.put(idUser, list);
+            map.put(login, list);
         }
     }
 
-    public void removeFromMap(AsyncContext asyncContext, String idUser) {
-        if(idUser!=null) {
-            CopyOnWriteArrayList<AsyncContext> list = map.getOrDefault(idUser, new CopyOnWriteArrayList<>());
+
+    public void removeFromMap(AsyncContext asyncContext, String login) {
+        if(login!=null) {
+            CopyOnWriteArrayList<AsyncContext> list = map.getOrDefault(login, new CopyOnWriteArrayList<>());
             list.remove(asyncContext);
-            map.put(idUser, list);
+            map.put(login, list);
         }
     }
 
     public void clearMap() {
         this.map.clear();
+    }
+
+    public CopyOnWriteArrayList<String> getOnlineEmitters(){
+
+        CopyOnWriteArrayList<String> list1 = new CopyOnWriteArrayList<>();
+        for (var pair:map.entrySet()) {
+            if(!pair.getValue().isEmpty()){
+                list1.add(pair.getKey());
+            }
+        }
+        return list1;
     }
 }

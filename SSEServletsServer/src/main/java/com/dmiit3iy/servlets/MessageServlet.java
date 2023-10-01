@@ -1,6 +1,5 @@
 package com.dmiit3iy.servlets;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.dmiit3iy.DAO.DAO;
 import com.dmiit3iy.dto.Event;
 import com.dmiit3iy.dto.ResponseResult;
@@ -8,6 +7,7 @@ import com.dmiit3iy.model.Msg;
 import com.dmiit3iy.model.User;
 import com.dmiit3iy.repository.SSEEmittersRepository;
 import com.dmiit3iy.service.ChatService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import javax.servlet.AsyncContext;
@@ -17,15 +17,19 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @WebServlet(value = "/chatnew/msgs", asyncSupported = true)
 public class MessageServlet extends HttpServlet {
     private SSEEmittersRepository emitters = new SSEEmittersRepository();
+
+    public SSEEmittersRepository getEmitters() {
+        return emitters;
+    }
+
     private ChatService service;
-    private   Msg msg;
+    private Msg msg;
     private ObjectMapper objectMapper = new ObjectMapper();
 
     {
@@ -52,23 +56,24 @@ public class MessageServlet extends HttpServlet {
 
             AsyncContext asyncContext = req.startAsync();
             asyncContext.setTimeout(60000L);
-            System.out.println("Подключение эмиттера"+asyncContext);
-            String idUser = req.getParameter("id");
-            System.out.println("Пользователь"+idUser);
-            this.emitters.add(asyncContext,idUser);
+            System.out.println("Подключение эмиттера" + asyncContext);
+            String login = req.getParameter("login");
+            System.out.println("Пользователь" + login);
+
+            this.emitters.add(asyncContext, login);
+            //  this.objectMapper.writeValue(resp.getWriter(), new ResponseResult<>(null, emitters.getOnlineEmitters()));
         } else {
             resp.setCharacterEncoding("utf-8");
             req.setCharacterEncoding("utf-8");
             resp.setContentType("application/json");
             try {
-            List<Msg> list = DAO.getAllObjects(Msg.class);
-            DAO.closeOpenedSession();
+                List<Msg> list = DAO.getAllObjects(Msg.class);
+                DAO.closeOpenedSession();
 
                 this.objectMapper.writeValue(resp.getWriter(), new ResponseResult<>(null, list));
             } catch (IOException e) {
                 this.objectMapper.writeValue(resp.getWriter(), new ResponseResult<>(e.getMessage(), null));
             }
-
 
 
         }
@@ -93,25 +98,26 @@ public class MessageServlet extends HttpServlet {
             DAO.addObject(msg);
             this.objectMapper.writeValue(resp.getWriter(), new ResponseResult<>(null, msg));
 
-        //   service.addEvent(new Event(msg.getUser().getLogin(),msg.getMessage()));
         } catch (IllegalArgumentException e) {
             resp.setStatus(400);
             this.objectMapper.writeValue(resp.getWriter(), new ResponseResult<>(e.getMessage(), null));
         } catch (Exception e) {
             resp.setStatus(400);
             resp.getWriter().println("Error " + e.getMessage());
-        }finally {
+        } finally {
             DAO.closeOpenedSession();
         }
-        service.addEvent(new Event(msg.getUser().getLogin(),msg.getMessage()+" "+msg.getLocalDateTime().format(DateTimeFormatter.ofPattern("yyy-MM-dd HH-mm-ss"))));
-       
+        service.addEvent(new Event(msg.getUser().getLogin(), msg.getMessage() + " " + msg.getLocalDateTime().format(DateTimeFormatter.ofPattern("yyy-MM-dd HH-mm-ss"))));
+
     }
 
-
-
-
-
-
+    @Override
+    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        resp.setCharacterEncoding("utf-8");
+        req.setCharacterEncoding("utf-8");
+        resp.setContentType("application/json;charset=utf-8");
+        this.objectMapper.writeValue(resp.getWriter(), new ResponseResult<>(null, emitters.getOnlineEmitters()));
+    }
 
 
 }

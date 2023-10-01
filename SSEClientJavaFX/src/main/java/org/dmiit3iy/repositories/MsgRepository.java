@@ -20,6 +20,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 
@@ -71,6 +72,9 @@ public class MsgRepository {
         }
     }
 
+
+
+
     public Msg add(Msg msg,User user) throws IOException {
         try (InputStream inputStream = getData(Constans.SERVER_URL + "/msgs?id="+user.getId(), "POST", msg)) {
             ResponseResult<Msg> responseResult = objectMapper.readValue(inputStream, new TypeReference<ResponseResult<Msg>>() {
@@ -79,5 +83,13 @@ public class MsgRepository {
         }
     }
 
+    public CopyOnWriteArrayList<String> getEmitters() throws IOException {
+        try (InputStream inputStream = getData(Constans.SERVER_URL + "/msgs", "PUT")) {
+
+            ResponseResult<CopyOnWriteArrayList<String>> responseResult = objectMapper.readValue(inputStream, new TypeReference<>() {});
+
+            return responseResult.getData();
+        }
+    }
 
 }
