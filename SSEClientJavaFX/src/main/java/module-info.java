@@ -12,6 +12,7 @@ module org.dmiit3iy {
 
     opens org.dmiit3iy to javafx.fxml;
     opens org.dmiit3iy.controllers to javafx.fxml;
+    opens org.dmiit3iy.dto to  com.fasterxml.jackson.databind;
 
     exports org.dmiit3iy;
     exports org.dmiit3iy.controllers;

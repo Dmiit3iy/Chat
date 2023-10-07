@@ -17,19 +17,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @WebServlet(value = "/chatnew/msgs", asyncSupported = true)
 public class MessageServlet extends HttpServlet {
-    private SSEEmittersRepository emitters = new SSEEmittersRepository();
-
-    public SSEEmittersRepository getEmitters() {
-        return emitters;
-    }
+    private SSEEmittersRepository repository = new SSEEmittersRepository();
 
     private ChatService service;
-    private Msg msg;
+
     private ObjectMapper objectMapper = new ObjectMapper();
 
     {
@@ -38,7 +33,8 @@ public class MessageServlet extends HttpServlet {
 
     @Override
     public void init() {
-        this.service = new ChatService(this.emitters);
+
+        this.service = new ChatService(this.repository);
     }
 
     @Override
@@ -48,7 +44,7 @@ public class MessageServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        if (req.getHeader("Accept").equals("text/event-stream")) {
+        if (req.getHeader("Accept") != null && req.getHeader("Accept").equals("text/event-stream")) {
 
             resp.setContentType("text/event-stream");
             resp.setHeader("Connection", "keep-alive");
@@ -57,11 +53,10 @@ public class MessageServlet extends HttpServlet {
             AsyncContext asyncContext = req.startAsync();
             asyncContext.setTimeout(60000L);
             System.out.println("Подключение эмиттера" + asyncContext);
-            String login = req.getParameter("login");
-            System.out.println("Пользователь" + login);
+            long userId = Long.parseLong(req.getParameter("userId"));
+            System.out.println("Пользователь" + userId);
+            SSEEmittersRepository.add(asyncContext, userId);
 
-            this.emitters.add(asyncContext, login);
-            //  this.objectMapper.writeValue(resp.getWriter(), new ResponseResult<>(null, emitters.getOnlineEmitters()));
         } else {
             resp.setCharacterEncoding("utf-8");
             req.setCharacterEncoding("utf-8");
@@ -74,23 +69,17 @@ public class MessageServlet extends HttpServlet {
             } catch (IOException e) {
                 this.objectMapper.writeValue(resp.getWriter(), new ResponseResult<>(e.getMessage(), null));
             }
-
-
         }
-
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         resp.setCharacterEncoding("utf-8");
         req.setCharacterEncoding("utf-8");
-
         resp.setContentType("application/json;charset=utf-8");
-
-
-        String s = req.getParameter("id");
+        String s = req.getParameter("userId"); //TODO userId
         try (BufferedReader reader = req.getReader()) {
-            msg = objectMapper.readValue(reader, Msg.class);
+            Msg msg = objectMapper.readValue(reader, Msg.class);
 
             User user = (User) DAO.getObjectById(Long.valueOf(s), User.class);
             DAO.closeOpenedSession();
@@ -98,26 +87,14 @@ public class MessageServlet extends HttpServlet {
             DAO.addObject(msg);
             this.objectMapper.writeValue(resp.getWriter(), new ResponseResult<>(null, msg));
 
+            String jsonMessage = objectMapper.writeValueAsString(msg);
+            service.addEvent(new Event(msg.getUser().getLogin(), jsonMessage));
         } catch (IllegalArgumentException e) {
             resp.setStatus(400);
             this.objectMapper.writeValue(resp.getWriter(), new ResponseResult<>(e.getMessage(), null));
         } catch (Exception e) {
             resp.setStatus(400);
             resp.getWriter().println("Error " + e.getMessage());
-        } finally {
-            DAO.closeOpenedSession();
         }
-        service.addEvent(new Event(msg.getUser().getLogin(), msg.getMessage() + " " + msg.getLocalDateTime().format(DateTimeFormatter.ofPattern("yyy-MM-dd HH-mm-ss"))));
-
     }
-
-    @Override
-    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        resp.setCharacterEncoding("utf-8");
-        req.setCharacterEncoding("utf-8");
-        resp.setContentType("application/json;charset=utf-8");
-        this.objectMapper.writeValue(resp.getWriter(), new ResponseResult<>(null, emitters.getOnlineEmitters()));
-    }
-
-
 }

@@ -7,13 +7,12 @@
    <children>
       <TextArea fx:id="chatTextArea" layoutX="37.0" layoutY="35.0" prefHeight="200.0" prefWidth="411.0" />
       <TextArea fx:id="messageTextArea" layoutX="37.0" layoutY="252.0" prefHeight="59.0" prefWidth="411.0" />
-      <Button layoutX="37.0" layoutY="324.0" mnemonicParsing="false" onAction="#sendButton" text="Send message" />
+      <Button layoutX="38.0" layoutY="350.0" mnemonicParsing="false" onAction="#sendButton" text="Send message" />
       <Label layoutX="37.0" layoutY="14.0" text="Chat" />
       <Label layoutX="37.0" layoutY="235.0" text="Message" />
-      <Button fx:id="logOfButtonId" layoutX="534.0" layoutY="361.0" mnemonicParsing="false" onAction="#LogOffButton" text="LogOff" />
       <ListView fx:id="onLineUsersListView" layoutX="474.0" layoutY="35.0" prefHeight="276.0" prefWidth="86.0" />
       <Label layoutX="474.0" layoutY="14.0" text="On-line" />
-      <Button layoutX="343.0" layoutY="324.0" mnemonicParsing="false" onAction="#getAllMsgButton" text="Get all messages" />
+      <Button layoutX="474.0" layoutY="350.0" mnemonicParsing="false" onAction="#getAllMsgButton" text="Get all messages" />
       <Label fx:id="loginLable" layoutX="229.0" layoutY="6.0" text="Label" />
    </children>
 </AnchorPane>

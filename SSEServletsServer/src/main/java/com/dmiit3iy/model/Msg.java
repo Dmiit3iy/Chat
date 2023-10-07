@@ -18,14 +18,13 @@ public class Msg {
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-    @Column(nullable = false, unique = false)
+    @Column(nullable = false)
     @NonNull
     private String message;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH-mm-ss")
     @Column(nullable = false)
-    @NonNull
-    private LocalDateTime localDateTime;
+    private LocalDateTime localDateTime = LocalDateTime.now();
     @NonNull
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)

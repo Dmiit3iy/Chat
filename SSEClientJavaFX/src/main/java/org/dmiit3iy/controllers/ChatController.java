@@ -1,5 +1,9 @@
 package org.dmiit3iy.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.launchdarkly.eventsource.EventHandler;
 import com.launchdarkly.eventsource.EventSource;
 import com.launchdarkly.eventsource.MessageEvent;
@@ -14,35 +18,36 @@ import javafx.scene.control.TextArea;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
+import org.dmiit3iy.dto.Event;
 import org.dmiit3iy.model.Msg;
 import org.dmiit3iy.model.User;
 
 import org.dmiit3iy.repositories.MsgRepository;
-import org.dmiit3iy.utils.EventOnlineWrapper;
+import org.dmiit3iy.repositories.UserRepository;
 import org.dmiit3iy.utils.EventWrapper;
-import org.dmiit3iy.utils.SimpleEventHandler;
 
 
 import java.io.IOException;
 import java.net.URI;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.prefs.Preferences;
+import java.util.stream.Collectors;
 
 public class ChatController {
+       private ObjectMapper objectMapper = new ObjectMapper();
+
+    {
+        this.objectMapper.registerModule(new JavaTimeModule());
+    }
 
     public Button logOfButtonId;
     public ListView onLineUsersListView;
     public Label loginLable;
-    CopyOnWriteArrayList<String> emittersList = new CopyOnWriteArrayList<>();
+    ArrayList<String> emittersList = new ArrayList<>();
     private BlockingQueue<String> blockingQueue = new LinkedBlockingQueue<>();
-
-    public void setBlockingQueue(String s) throws InterruptedException {
-        this.blockingQueue.put(s);
-    }
 
     MsgRepository msgRepository = new MsgRepository();
 
@@ -52,13 +57,10 @@ public class ChatController {
     private String EventMessage;
     ExecutorService executorService = Executors.newSingleThreadExecutor();
 
-    ExecutorService executorService2 = Executors.newSingleThreadExecutor();
 
     public TextArea chatTextArea;
     public TextArea messageTextArea;
     User user;
-
-
 
 
     public void initData(User user) {
@@ -66,148 +68,116 @@ public class ChatController {
         chatTextArea.setEditable(false);
         this.user = user;
 
+
         executorService.execute(() -> {
             try {
                 while (true) {
                     System.out.println("Initialize event source");
 
-                    String url = "http://localhost:8080/chatnew/msgs" + "?login=" + user.getLogin();
-
-
-                    String url2 = "http://localhost:8080/chatnew/emiters";
-
-
-                    EventSource.Builder builder2 = new EventSource.Builder(new EventHandler() {
-                        @Override
-                        public void onOpen() throws Exception {
-
-                        }
-
-                        @Override
-                        public void onClosed() throws Exception {
-
-                        }
-
-                        @Override
-                        public void onMessage(String s, MessageEvent messageEvent) throws Exception {
-                            //передать из потока в javaFX
-                            Platform.runLater(() -> {
-                                System.out.println("ПРо онлай пользователей"+messageEvent.getData());
-                                System.out.println(EventOnlineWrapper.makeString(messageEvent));
-                                ObservableList<String> listEmitters = FXCollections.observableArrayList(EventOnlineWrapper.makeString(messageEvent));
-                                onLineUsersListView.setItems(listEmitters);
-                            });
-                        }
-
-                        @Override
-                        public void onComment(String s) throws Exception {
-
-                        }
-
-                        @Override
-                        public void onError(Throwable throwable) {
-
-                        }
-                    }, URI.create(url2));
+                    String url = "http://localhost:8080/chatnew/msgs" + "?userId=" + user.getId();
+                    String url2 = "http://localhost:8080/chatnew/online";
 
                     EventSource.Builder builder = new EventSource.Builder(new EventHandler() {
                         @Override
                         public void onOpen() throws Exception {
-
                         }
 
                         @Override
                         public void onClosed() throws Exception {
-
                         }
 
                         @Override
                         public void onMessage(String s, MessageEvent messageEvent) throws Exception {
-                            //передать из потока в javaFX
+
                             Platform.runLater(() -> {
                                 System.out.println(messageEvent.getData());
-                                chatTextArea.appendText(EventWrapper.makeString(messageEvent));
-                                chatTextArea.appendText("\n");
+
+                                try {
+                                    Event event = objectMapper.readValue(messageEvent.getData(), new TypeReference<Event>() {
+                                    });
+                                    Msg msg = objectMapper.readValue(event.getMessage(), Msg.class);
+
+                                    chatTextArea.appendText(EventWrapper.makeString(msg));
+                                    chatTextArea.appendText("\n");
+                                } catch (JsonProcessingException e) {
+                                    throw new RuntimeException(e);
+                                }
                             });
                         }
 
                         @Override
                         public void onComment(String s) throws Exception {
-
                         }
 
                         @Override
                         public void onError(Throwable throwable) {
-
                         }
                     }, URI.create(url));
 
-                    try (EventSource eventSource = builder.build();EventSource eventSource2 = builder2.build()) {
+                    EventSource.Builder builder2 = new EventSource.Builder(new EventHandler() {
+                        @Override
+                        public void onOpen() throws Exception {
+                        }
+
+                        @Override
+                        public void onClosed() throws Exception {
+                        }
+
+                        @Override
+                        public void onMessage(String s, MessageEvent messageEvent) throws Exception {
+
+                            Platform.runLater(() -> {
+                                System.out.println(messageEvent.getData());
+
+                                try {
+                                    Event event = objectMapper.readValue(messageEvent.getData(), new TypeReference<Event>() {
+
+                                    });
+
+                                    System.out.println(event+"Это ивент!!!");
+
+                                    ArrayList<User> userArrayList = objectMapper.readValue(event.getMessage(), new TypeReference<ArrayList<User>>() {
+                                    });
+
+                                 emittersList = (ArrayList<String>) userArrayList.stream().map(x->x.getLogin()).collect(Collectors.toList());
+
+                                   ObservableList<String> userList = FXCollections.observableList(emittersList);
+                                   onLineUsersListView.setItems(userList);
+                                } catch (JsonProcessingException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            });
+                        }
+
+                        @Override
+                        public void onComment(String s) throws Exception {
+                        }
+
+                        @Override
+                        public void onError(Throwable throwable) {
+                        }
+                    }, URI.create(url2));
+
+
+                    try (EventSource eventSource = builder.build();
+                         EventSource eventSource2 = builder2.build()) {
+
                         eventSource.start();
                         eventSource2.start();
+
                         TimeUnit.SECONDS.sleep(10);
                     }
                 }
-
-
-
-
             } catch (InterruptedException ignored) {
             }
-
-//            try {
-//                while (true) {
-//                    System.out.println("Initialize event source");
-//                    EventHandler eventHandler2 = new SimpleEventHandler();
-//                    String url2 = "http://localhost:8080/chatnew/emiters";
-//                    EventSource.Builder builder = new EventSource.Builder(eventHandler2, URI.create(url2));
-//
-//                    try (EventSource eventSource = builder.build()) {
-//                        eventSource.start();
-//                        TimeUnit.MINUTES.sleep(1);
-//                    }
-//                }
-//            } catch (InterruptedException ignored) {}
-
-
-
         });
-
-//        executorService2.execute(() -> {
-//            try {while (true) {
-//                ObservableList<String> listEmitters = FXCollections.observableArrayList(msgRepository.getEmitters());
-//                onLineUsersListView.setItems(listEmitters);
-//                Thread.sleep(100);
-//            }
-//            } catch (IOException | InterruptedException ignored) {
-//
-//            }
-//        });
-
-//        executorService2.execute(() -> {
-//            try {
-//                while (true) {
-//                    System.out.println("Initialize event source");
-//                    EventHandler eventHandler = new SimpleEventHandler();
-//                    String url = "http://localhost:8080/chatnew/emiters";
-//                    EventSource.Builder builder = new EventSource.Builder(eventHandler, URI.create(url));
-//
-//                    try (EventSource eventSource = builder.build()) {
-//                        eventSource.start();
-//                        TimeUnit.MINUTES.sleep(1);
-//                    }
-//                }
-//            } catch (InterruptedException ignored) {}
-//        });
     }
-
 
 
     public void sendButton(ActionEvent actionEvent) throws IOException {
         message = messageTextArea.getText();
-        LocalDateTime localDateTime = LocalDateTime.now();
-        Msg msg = new Msg(message, localDateTime, user);
-        msgRepository.add(msg, user);
+        Msg msg = new Msg(message, user);
+        msgRepository.add(msg);
         messageTextArea.clear();
 
     }
@@ -219,7 +189,7 @@ public class ChatController {
         userlog.putBoolean("authorization", false);
         userIDlog.put("userID", "-1");
         executorService.shutdownNow();
-        executorService2.shutdownNow();
+
         Stage stage1 = (Stage) logOfButtonId.getScene().getWindow();
         stage1.close();
     }
@@ -228,7 +198,6 @@ public class ChatController {
         @Override
         public void handle(WindowEvent event) {
             executorService.shutdownNow();
-            executorService2.shutdownNow();
         }
     };
 
@@ -238,6 +207,7 @@ public class ChatController {
 
 
     public void getAllMsgButton(ActionEvent actionEvent) throws IOException {
+        chatTextArea.clear();
         List<Msg> msgArrayList = msgRepository.get();
         msgArrayList.sort(new Comparator<Msg>() {
             @Override
@@ -247,7 +217,7 @@ public class ChatController {
         });
         for (Msg m : msgArrayList
         ) {
-            chatTextArea.appendText(m.toString());
+            chatTextArea.appendText(EventWrapper.makeString(m));
             chatTextArea.appendText("\n");
         }
 

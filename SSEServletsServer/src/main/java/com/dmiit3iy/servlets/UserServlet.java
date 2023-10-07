@@ -75,8 +75,7 @@ public class UserServlet extends HttpServlet {
             if (user == null) {
                 resp.setStatus(400);
                 this.objectMapper.writeValue(resp.getWriter(), new ResponseResult<>
-                        ("Введены неверные данные или пользователь отсутвует в базе данных", null));
-
+                        ("Введены неверные данные или пользователь отсутствует в базе данных", null));
             } else {
                 this.objectMapper.writeValue(resp.getWriter(), new ResponseResult<>(null, user));
             }
@@ -96,10 +95,10 @@ public class UserServlet extends HttpServlet {
         req.setCharacterEncoding("UTF-8");
         resp.setCharacterEncoding("UTF-8");
         resp.setContentType("application/json;charset=utf-8");
-        String id = req.getParameter("id");
-        if (id != null) {
+        String userId = req.getParameter("userId");
+        if (userId != null) {
             try {
-                User user = (User) DAO.getObjectById(Long.valueOf(id), User.class);
+                User user = (User) DAO.getObjectById(Long.valueOf(userId), User.class);
                 DAO.closeOpenedSession();
                 if (user == null) {
                     resp.setStatus(400);

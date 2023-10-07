@@ -75,8 +75,8 @@ public class MsgRepository {
 
 
 
-    public Msg add(Msg msg,User user) throws IOException {
-        try (InputStream inputStream = getData(Constans.SERVER_URL + "/msgs?id="+user.getId(), "POST", msg)) {
+    public Msg add(Msg msg) throws IOException {
+        try (InputStream inputStream = getData(Constans.SERVER_URL + "/msgs?userId="+msg.getUser().getId(), "POST", msg)) {
             ResponseResult<Msg> responseResult = objectMapper.readValue(inputStream, new TypeReference<ResponseResult<Msg>>() {
             });
             return responseResult.getData();

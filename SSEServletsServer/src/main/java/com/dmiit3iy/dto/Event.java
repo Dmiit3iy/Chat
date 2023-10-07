@@ -5,12 +5,10 @@ import java.util.StringJoiner;
 public class Event {
 
     private final String user;
-   // private final String action;
     private final String message;
 
     public Event(String user, String message) {
         this.user = user;
-       // this.path = path.toString();
         this.message = message;
     }
 

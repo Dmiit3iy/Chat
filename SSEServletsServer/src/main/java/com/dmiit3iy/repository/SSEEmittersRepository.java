@@ -1,39 +1,84 @@
 package com.dmiit3iy.repository;
 
+
+import com.dmiit3iy.DAO.DAO;
+import com.dmiit3iy.dto.Event;
+import com.dmiit3iy.model.User;
+import com.dmiit3iy.service.OnlineService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import javax.servlet.AsyncContext;
 import javax.servlet.AsyncEvent;
 import javax.servlet.AsyncListener;
 import java.util.ArrayList;
-import java.util.Map;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+
 public class SSEEmittersRepository {
-    private CopyOnWriteArrayList<AsyncContext> list = new CopyOnWriteArrayList<>();
 
-    private static ConcurrentHashMap<String, CopyOnWriteArrayList<AsyncContext>> map = new ConcurrentHashMap<>();
+    private static ConcurrentHashMap<Long, CopyOnWriteArrayList<AsyncContext>> map = new ConcurrentHashMap<>();
 
-    public void add(AsyncContext asyncContext, String login) {
+    public static void add(AsyncContext asyncContext, long userId) {
+        ObjectMapper objectMapper = new ObjectMapper();
         asyncContext.addListener(new AsyncListener() {
             @Override
             public void onComplete(AsyncEvent asyncEvent) {
-                list.remove(asyncContext);
+                //TODO remove from map
+                remove(asyncContext, userId);
                 System.out.println("Finish");
-                removeFromMap(asyncContext, login);
+
+                try {
+                    ArrayList<User> userArrayList = new ArrayList<>();
+                    List<Long> list = getOnlineEmitters();
+                    for (Long x : list) {
+                        userArrayList.add((User) DAO.getObjectById(x, User.class));
+                    }
+                    String emmitors = objectMapper.writeValueAsString(userArrayList);
+                    OnlineService.addEvent(new Event(String.valueOf(userId), emmitors));
+                } catch (JsonProcessingException e) {
+                    throw new RuntimeException(e);
+                }
             }
 
             @Override
             public void onTimeout(AsyncEvent asyncEvent) {
-                list.remove(asyncContext);
+                //TODO remove from map
+                remove(asyncContext, userId);
                 System.out.println("Timeout");
-                removeFromMap(asyncContext, login);
+
+                try {
+                    ArrayList<User> userArrayList = new ArrayList<>();
+                    List<Long> list = getOnlineEmitters();
+                    for (Long x : list) {
+                        userArrayList.add((User) DAO.getObjectById(x, User.class));
+                    }
+                    String emmitors = objectMapper.writeValueAsString(userArrayList);
+                    OnlineService.addEvent(new Event(String.valueOf(userId), emmitors));
+                } catch (JsonProcessingException e) {
+                    throw new RuntimeException(e);
+                }
             }
 
             @Override
             public void onError(AsyncEvent asyncEvent) {
-                list.remove(asyncContext);
+                remove(asyncContext, userId);
                 System.out.println("Error");
-                removeFromMap(asyncContext, login);
+
+                try {
+                    ArrayList<User> userArrayList = new ArrayList<>();
+                    List<Long> list = getOnlineEmitters();
+                    for (Long x : list) {
+                        userArrayList.add((User) DAO.getObjectById(x, User.class));
+                    }
+                    String emmitors = objectMapper.writeValueAsString(userArrayList);
+                    OnlineService.addEvent(new Event(String.valueOf(userId), emmitors));
+                } catch (JsonProcessingException e) {
+                    throw new RuntimeException(e);
+                }
+
             }
 
             @Override
@@ -42,50 +87,62 @@ public class SSEEmittersRepository {
             }
         });
 
-        list.add(asyncContext);
-        System.out.println("After adding emitter " + list);
-        addInMap(asyncContext, login);
-        System.out.println("МАПА эмиттеров: "+map);
+        addInMap(asyncContext, userId);
+
+        try {
+            ArrayList<User> userArrayList = new ArrayList<>();
+            List<Long> list = getOnlineEmitters();
+            for (Long x : list) {
+                userArrayList.add((User) DAO.getObjectById(x, User.class));
+            }
+            String emmitors = objectMapper.writeValueAsString(userArrayList);
+            OnlineService.addEvent(new Event(String.valueOf(userId), emmitors));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+
+        System.out.println("МАПА эмиттеров: " + map);
+
+
     }
 
-    public CopyOnWriteArrayList<AsyncContext> getList() {
-        return list;
-    }
 
-    public ConcurrentHashMap<String, CopyOnWriteArrayList<AsyncContext>> getMap() {
+    public ConcurrentHashMap<Long, CopyOnWriteArrayList<AsyncContext>> getMap() {
         return map;
     }
 
     public void clear() {
-        this.list.clear();
-    }
-
-    public void addInMap(AsyncContext asyncContext, String login) {
-        if(login!=null) {
-            CopyOnWriteArrayList<AsyncContext> list = map.getOrDefault(login, new CopyOnWriteArrayList<>());
-            list.add(asyncContext);
-            map.put(login, list);
-        }
-    }
-
-
-    public void removeFromMap(AsyncContext asyncContext, String login) {
-        if(login!=null) {
-            CopyOnWriteArrayList<AsyncContext> list = map.getOrDefault(login, new CopyOnWriteArrayList<>());
-            list.remove(asyncContext);
-            map.put(login, list);
-        }
-    }
-
-    public void clearMap() {
         this.map.clear();
     }
 
-    public static CopyOnWriteArrayList<String> getOnlineEmitters(){
+    public static void addInMap(AsyncContext asyncContext, long userId) {
+        CopyOnWriteArrayList<AsyncContext> list = map.getOrDefault(userId, new CopyOnWriteArrayList<>());
+        list.add(asyncContext);
+        map.put(userId, list);
+    }
 
-        CopyOnWriteArrayList<String> list1 = new CopyOnWriteArrayList<>();
-        for (var pair:map.entrySet()) {
-            if(!pair.getValue().isEmpty()){
+
+    public static void remove(AsyncContext asyncContext, long userId) {
+        if (userId > 0) {
+            CopyOnWriteArrayList<AsyncContext> list = map.getOrDefault(userId, new CopyOnWriteArrayList<>());
+            list.remove(asyncContext);
+            map.put(userId, list);
+        }
+    }
+
+    public static void clearMap() {
+        map.clear();
+    }
+
+    /**
+     * Метод для получения он-лайн пользователей (те у кого есть соединения - он-лайн)
+     * @return
+     */
+    public static ArrayList<Long> getOnlineEmitters() {
+
+        ArrayList<Long> list1 = new ArrayList<>();
+        for (var pair : map.entrySet()) {
+            if (!pair.getValue().isEmpty()) {
                 list1.add(pair.getKey());
             }
         }

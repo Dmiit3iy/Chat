@@ -29,7 +29,7 @@ public class ChatService {
     }
 
     public ChatService(SSEEmittersRepository repository) {
-        this.repository = repository;
+        this.repository=repository;
         this.startMessageReceive();
 
     }
@@ -40,10 +40,14 @@ public class ChatService {
             try {
                 while (true) {
                     Event message = messageBlockingQueue.take();
-                    System.out.println("Start sending\n" + repository.getList());
-                    for (AsyncContext asyncContext : repository.getList()) {
+                    System.out.println("Start sending\n" + repository.getMap());
+                    for (var pair : repository.getMap().entrySet()) {
+
                         try {
-                            sendMessage(asyncContext.getResponse().getWriter(), message);
+                            for (AsyncContext asyncContext:pair.getValue()) {
+                                sendMessage(asyncContext.getResponse().getWriter(), message);
+                            }
+
                         } catch (IOException e) {
                             e.printStackTrace();
                         }

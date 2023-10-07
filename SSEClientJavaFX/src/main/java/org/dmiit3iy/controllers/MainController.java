@@ -54,7 +54,6 @@ public class MainController {
     public void registraionButton(ActionEvent actionEvent) throws IOException {
 
         Stage stage1 = (Stage) loginTextField.getScene().getWindow();
-
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/org/dmiit3iy/registration.fxml"));
         Stage stage = new Stage(StageStyle.DECORATED);
         stage.setScene(new Scene(loader.load()));
